@@ -2,6 +2,7 @@ import { CELL_VALUE, GAME_STATUS, TURN } from "./constants.js";
 import {
   getCellElementAtIdx,
   getCellElementList,
+  getCellListElement,
   getCurrentTurnElement,
   getGameStatusElement,
   getReplayButtonElement,
@@ -122,10 +123,22 @@ const resetGame = () => {
 };
 
 const initCellElementList = () => {
-  const cellElementList = getCellElementList();
-  cellElementList.forEach((cell, index) => {
-    cell.addEventListener("click", () => handleCellClick(cell, index));
-  });
+  // bind id data set for each li element
+  const liListElement = getCellElementList();
+  if (liListElement) {
+    liListElement.forEach((cell, index) => {
+      cell.dataset.idx = index;
+    });
+  }
+  // bind event click for ul element (apply delegation)
+  const ulElement = getCellListElement();
+  if (ulElement) {
+    ulElement.addEventListener("click", (event) => {
+      if (event.target.tagName !== "LI") return;
+      const index = parseInt(event.target.dataset.idx);
+      handleCellClick(event.target, index);
+    });
+  }
 };
 const initReplayButtonElement = () => {
   const replayButtonElement = getReplayButtonElement();
