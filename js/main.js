@@ -42,6 +42,11 @@ const showReplayButton = () => {
   if (replayButtonElement) replayButtonElement.classList.add("show");
 };
 
+const hideReplayButton = () => {
+  const replayButtonElement = getReplayButtonElement();
+  if (replayButtonElement) replayButtonElement.classList.remove("show");
+};
+
 const highlightWinCell = (winPositions) => {
   if (!Array.isArray(winPositions) || winPositions.length !== 3) {
     throw new Error("Invalid win cell position");
@@ -92,14 +97,45 @@ const handleCellClick = (cell, index) => {
   toggleCurrentTurn();
 };
 
+const resetGame = () => {
+  // reset global vars
+  currentTurn = TURN.CROSS;
+  gameStatus = GAME_STATUS.PLAYING;
+  cellValues = cellValues.map(() => "");
+
+  // reser game status
+  updateGameStatus(GAME_STATUS.PLAYING);
+  // reset current turn
+  const currentTurnElement = getCurrentTurnElement();
+  currentTurnElement.classList.remove(TURN.CROSS, TURN.CIRCLE);
+  currentTurnElement.classList.add(TURN.CROSS);
+
+  // reset game board
+  const cellElementList = getCellElementList();
+  if (cellElementList) {
+    for (const cellElement of cellElementList) {
+      cellElement.className='';
+    }
+  }
+  // hide replay button
+  hideReplayButton();
+};
+
 const initCellElementList = () => {
   const cellElementList = getCellElementList();
   cellElementList.forEach((cell, index) => {
     cell.addEventListener("click", () => handleCellClick(cell, index));
   });
 };
-
+const initReplayButtonElement = () => {
+  const replayButtonElement = getReplayButtonElement();
+  console.log("replayButtonElement", replayButtonElement);
+  if (replayButtonElement)
+    replayButtonElement.addEventListener("click", resetGame);
+};
 (() => {
   // bind click event for all li element
   initCellElementList();
+  // bind click evet for replay button
+  initReplayButtonElement();
 })();
