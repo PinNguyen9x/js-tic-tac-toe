@@ -1,12 +1,18 @@
-import { TURN } from "./constants.js";
-import { getCellElementList, getCurrentTurnElement } from "./selectors.js";
+import { CELL_VALUE, GAME_STATUS, TURN } from "./constants.js";
+import {
+  getCellElementAtIdx,
+  getCellElementList,
+  getCurrentTurnElement,
+  getGameStatusElement,
+  getReplayButtonElement,
+} from "./selectors.js";
 import { checkGameStatus } from "./utils.js";
 
 /**
  * Global variables
  */
 let currentTurn = TURN.CROSS;
-let isGameEnded = false;
+let gameStatus = GAME_STATUS.PLAYING;
 let cellValues = new Array(9).fill("");
 
 /**
@@ -24,6 +30,28 @@ let cellValues = new Array(9).fill("");
  * 4. On replay button click --> reset game to play again.
  *
  */
+
+const updateGameStatus = (newGameStatus) => {
+  gameStatus = newGameStatus;
+  const gameStatusElement = getGameStatusElement();
+  if (gameStatusElement) gameStatusElement.textContent = newGameStatus;
+};
+
+const showReplayButton = () => {
+  const replayButtonElement = getReplayButtonElement();
+  if (replayButtonElement) replayButtonElement.classList.add("show");
+};
+
+const highlightWinCell = (winPositions) => {
+  if (!Array.isArray(winPositions) || winPositions.length !== 3) {
+    throw new Error("Invalid win cell position");
+  }
+  for (const position of winPositions) {
+    const cell = getCellElementAtIdx(position);
+    if (cell) cell.classList.add("win");
+  }
+};
+
 const toggleCurrentTurn = () => {
   const currentTurnElement = getCurrentTurnElement();
   currentTurn = currentTurn === TURN.CROSS ? TURN.CIRCLE : TURN.CROSS;
@@ -33,10 +61,34 @@ const toggleCurrentTurn = () => {
 const handleCellClick = (cell, index) => {
   const isClicked =
     cell.classList.contains(TURN.CROSS) || cell.classList.contains(TURN.CIRCLE);
-  if (isClicked) return;
+
+  if (isClicked || gameStatus !== GAME_STATUS.PLAYING) return;
 
   cell.classList.add(currentTurn);
 
+  // update cell values
+  cellValues[index] =
+    currentTurn === TURN.CIRCLE ? CELL_VALUE.CIRCLE : CELL_VALUE.CROSS;
+
+  // check gae status
+  const game = checkGameStatus(cellValues);
+  switch (game?.status) {
+    case GAME_STATUS.ENDED: {
+      updateGameStatus(game.status);
+      showReplayButton();
+      break;
+    }
+
+    case GAME_STATUS.O_WIN:
+    case GAME_STATUS.X_WIN: {
+      updateGameStatus(game.status);
+      highlightWinCell(game.winPositions);
+      showReplayButton();
+      break;
+    }
+    default:
+    // playing
+  }
   toggleCurrentTurn();
 };
 

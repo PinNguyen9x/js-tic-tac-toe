@@ -80,7 +80,7 @@ export function checkGameStatus(cellValues) {
     };
   }
   // playing or end game
-  const isEndGame = cellValues.filter((cell) => cell !== "").length === 0;
+  const isEndGame = cellValues.filter((cell) => cell === "").length === 0;
   return {
     status: isEndGame ? GAME_STATUS.ENDED : GAME_STATUS.PLAYING,
     winPositions: [],
